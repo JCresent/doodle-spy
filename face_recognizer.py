@@ -62,10 +62,10 @@ def draw_results(frame):
         if name == "Intruder":
                
             # Draw a box around the face
-            cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 3)
+            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 3)
             
             # Draw a label with a name below the face
-            cv2.rectangle(frame, (left -3, top - 35), (right+3, top), (255, 0, 0), cv2.FILLED)
+            cv2.rectangle(frame, (left -3, top - 35), (right+3, top), (0, 0, 255), cv2.FILLED)
             
         else:
             # Draw a box around the face
