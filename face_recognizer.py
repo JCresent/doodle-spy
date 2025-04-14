@@ -14,16 +14,16 @@ known_face_names = data["names"]
 # Grab webcam
 video_capture = cv2.VideoCapture(0) 
 
-cv_scaler = 4  # integer
-face_locations = []
-face_encodings = []
+cv_scaler = 2  # integer
+seen_face_locations = []
+seen_face_encodings = []
 face_names = []
 frame_count = 0
 start_time = time.time()
 fps = 0
 
 def process_frame(frame):
-    global face_locations, face_encodings, face_names
+    global seen_face_locations, seen_face_encodings, face_names
     
     # Resize the frame using cv_scaler to increase performance (less pixels processed, less time spent)
     resized_frame = cv2.resize(frame, (0, 0), fx=(1/cv_scaler), fy=(1/cv_scaler))
@@ -32,11 +32,11 @@ def process_frame(frame):
     rgb_resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
     
     # Find all the faces and face encodings in the current frame of video
-    face_locations = face_recognition.face_locations(rgb_resized_frame)
-    face_encodings = face_recognition.face_encodings(rgb_resized_frame, face_locations, model='large')
+    seen_face_locations = face_recognition.face_locations(rgb_resized_frame, model="hog")
+    seen_face_encodings = face_recognition.face_encodings(rgb_resized_frame, seen_face_locations, model='large')
     
     face_names = []
-    for face_encoding in face_encodings:
+    for face_encoding in seen_face_encodings:
         # See if the face is a match for the known face(s)
         matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
         name = "Intruder"
@@ -52,18 +52,27 @@ def process_frame(frame):
 
 def draw_results(frame):
     # Display the results
-    for (top, right, bottom, left), name in zip(face_locations, face_names):
+    for (top, right, bottom, left), name in zip(seen_face_locations, face_names):
         # Scale back up face locations since the frame we detected in was scaled
         top *= cv_scaler
         right *= cv_scaler
         bottom *= cv_scaler
         left *= cv_scaler
         
-        # Draw a box around the face
-        cv2.rectangle(frame, (left, top), (right, bottom), (244, 42, 3), 3)
-        
-        # Draw a label with a name below the face
-        cv2.rectangle(frame, (left -3, top - 35), (right+3, top), (244, 42, 3), cv2.FILLED)
+        if name == "Intruder":
+               
+            # Draw a box around the face
+            cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 3)
+            
+            # Draw a label with a name below the face
+            cv2.rectangle(frame, (left -3, top - 35), (right+3, top), (255, 0, 0), cv2.FILLED)
+            
+        else:
+            # Draw a box around the face
+            cv2.rectangle(frame, (left, top), (right, bottom), (244, 42, 3), 3)
+            
+            # Draw a label with a name below the face
+            cv2.rectangle(frame, (left -3, top - 35), (right+3, top), (244, 42, 3), cv2.FILLED)
         font = cv2.FONT_HERSHEY_DUPLEX
         cv2.putText(frame, name, (left + 6, top - 6), font, 1.0, (255, 255, 255), 1)
     
